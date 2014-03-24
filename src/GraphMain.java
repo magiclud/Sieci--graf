@@ -1,13 +1,7 @@
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Scanner;
 
 public class GraphMain {
 
@@ -29,9 +23,9 @@ public class GraphMain {
 				System.out.println(textEdge);
 				theGraph.addEdge(textEdge);
 				textEdge = bufferedReader.readLine();
-				// theGraph.findWayFromAToB(1, 7);
-
 			} while (textEdge != null);
+			theGraph.printAdjacentyMatrix(theGraph.getAdjacencyMatrix());
+			System.out.println( "Czy istnieje droga? - "+theGraph.findWayFromAToB(8, 1));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -41,14 +35,3 @@ public class GraphMain {
 		}
 	}
 }
-
-// Graph theGraph = new Graph(vertex);
-// String edge1 = "(v1-v2)=5";
-// theGraph.addEdge(edge1);
-//
-// theGraph.findWayFromAToB(1, 7);
-// } catch (FileNotFoundException | e) {
-// // TODO Auto-generated catch block
-// e.printStackTrace();
-// }
-
