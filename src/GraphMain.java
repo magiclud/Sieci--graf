@@ -16,7 +16,7 @@ public class GraphMain {
 
 			String vertex = bufferedReader.readLine();
 			System.out.println(vertex);
-			Graph theGraph = new Graph(vertex);
+			Graph2 theGraph = new Graph2(vertex);
 
 			String textEdge = bufferedReader.readLine();
 			do {
@@ -24,8 +24,9 @@ public class GraphMain {
 				theGraph.addEdge(textEdge);
 				textEdge = bufferedReader.readLine();
 			} while (textEdge != null);
-			theGraph.printAdjacentyMatrix(theGraph.getAdjacencyMatrix());
-			System.out.println( "Czy istnieje droga? - "+theGraph.findWayFromAToB(8, 1));
+		//	theGraph.printAdjacentyMatrix(theGraph.getAdjacencyMatrix());
+			theGraph.findWayFromAToB(3, 1);
+			//System.out.println( "Czy istnieje droga? - " + theGraph.findWayFromAToB(8, 1));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

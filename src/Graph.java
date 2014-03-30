@@ -7,6 +7,8 @@ public class Graph {
 	private int numberOfVertexes; /* liczba wierzcholkow */
 	ArrayList<Vertex> neighboursOfTheVertex;
 	Stack theStack;
+	
+	ArrayList<Vertex> visitedVertex;
 	private DistanceToParent shortPath[]; /* tablica danych najkrotszej sciezki */
 
 	public Graph(String ver) {
