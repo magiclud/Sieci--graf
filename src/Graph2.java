@@ -5,10 +5,11 @@ public class Graph2 {
 	ArrayList<Vertex> vertexList;/* lista wierzcholkow */
 	private int adjacencyMatrix[][]; /* macierz przlegania */
 	private int numberOfVertexes; /* liczba wierzcholkow */
-	ArrayList<Vertex> neighboursOfTheVertex;
-	Stack theStack;
-	ArrayList<Vertex> visitedVertexes;
 	private DistanceToParent shortPath[]; /* tablica danych najkrotszej sciezki */
+	private int numberOfPackets; /* liczba pakietow do przeslania */
+	private int weightConnection;
+	private int constant = 10;
+	private ArrayList<Vertex> vertixesOnTheWay;
 
 	public Graph2(String ver) {
 
@@ -27,7 +28,6 @@ public class Graph2 {
 		// najkrotsze sciezki
 		shortPath = new DistanceToParent[numberOfVertexes + 1];
 
-		theStack = new Stack(); // stos
 	}
 
 	public void addVertex(String ver) {
@@ -59,16 +59,15 @@ public class Graph2 {
 		adjacencyMatrix[i - 1][j - 1] = weight;
 		adjacencyMatrix[j - 1][i - 1] = weight;
 		// ustawianie sasiadow
-		vertexList.get(i - 1).addNeighbour(vertexList.get(j - 1));// dodanie do
-																	// j do
-																	// listy
-																	// sasiadow
-																	// i
+		// dodanie j do listy sasiadow i
+		vertexList.get(i - 1).addNeighbour(vertexList.get(j - 1));
 		vertexList.get(j - 1).addNeighbour(vertexList.get(i - 1));
 	}
 
-	public void findWayFromAToB(int i, int j) {
-		neighboursOfTheVertex = new ArrayList<Vertex>();
+	public void findWayFromAToB(String lineLoad) {
+		char[] way = readWayAndNrOfPakckets(lineLoad);
+		int i = Character.getNumericValue(way[0]);
+		int j = Character.getNumericValue(way[1]);
 		// A- miejsce w tablicy wierzcholkow gdzie znajduje sie punkt startowy;
 		// B - miejsce w tablicy wierzcholkow gdzie znajduje sie punkt koncowy;
 		int A = findVertexInTheList(i);// A- adres i - jego wartosc to i-1, bo
@@ -77,29 +76,28 @@ public class Graph2 {
 		if (A < 0 || B < 0) {
 			// throw nie ma takich wierzcholkow w grafie//TODO
 		}
-		System.out.println("Adres i: " + A + "  ;    adres j: " + B);
-		System.out.println("Start z wierzcholka "
-				+ vertexList.get(i - 1).getValue());
+//		System.out.println("Adres i: " + A + "  ;    adres j: " + B);
+//		System.out.println("Start z wierzcholka "
+//				+ vertexList.get(i - 1).getValue());
 
 		// i - oznaczam jako odwiedzony
 		vertexList.get(A).wasVisited = true;
 
-		visitedVertexes = new ArrayList<Vertex>();
 		// dodaje adres wierzcholka do listy
-		visitedVertexes.add(vertexList.get(A));
 
 		// create shorPath []
 		for (int k = 0; k < numberOfVertexes; k++) {
 			int temp = adjacencyMatrix[i - 1][k];
 			shortPath[k] = new DistanceToParent(i, temp);
 		}
-		int nTree = 1;
-		int currentVert; // bie¿¹cy wierzcho³ek
-		int startToCurrent; // odleg³oœæ do bie¿¹cego wierzcho³ka
-		// ******************************test**************/
-		while (nTree < numberOfVertexes) {// az do zapisania wszystkich
+		int level = 1;
+		int addressCurrentVert; // bie¿¹cy wierzcho³ek
+		int wayFromStartToCurrent; // odleg³oœæ do bie¿¹cego wierzcho³ka
+
+		while (level < numberOfVertexes) {// az do zapisania wszystkich
 											// wierzcholkow w drzewie
-			int indexMin = getMin(i);// pobierz z shortPath adres najblizszego kolejnego wierzcholka
+			int indexMin = getMin(i);// pobierz z shortPath adres najblizszego
+										// kolejnego wierzcholka
 			int minDist = shortPath[indexMin].distance; // wartosc tej drogi
 
 			if (minDist == -1) {// jezeli wszytsie krawedzie saniedostepne, lub
@@ -108,71 +106,45 @@ public class Graph2 {
 				break;
 			} else {
 				// przypisz adres biezacego wiezcholka
-				currentVert = indexMin;//adres wierzcholka najblizszego
-				startToCurrent = shortPath[indexMin].distance;
+				addressCurrentVert = indexMin;// adres wierzcholka najblizszego
+				wayFromStartToCurrent = shortPath[indexMin].distance;
 				// biezacy wierzcholek ma najmniejsza odleglosc od poczatku
 				// drzewa, odleglosc ta wynosi startToCurrent
 			}
 			// zapisz wierzcholek w drzewie
-			vertexList.get(currentVert).wasVisited = true;
-			nTree++;
-			adjus_sPath(currentVert, startToCurrent);// uaktualnij tablice
-														// shortPath;
-
+			vertexList.get(addressCurrentVert).wasVisited = true;
+			adjus_sPath(addressCurrentVert, wayFromStartToCurrent);// uaktualnij
+																	// tablice
+			// shortPath;
+			level++;
 			// end while <- liczba wierzcholkow w drzewie == liczba wierzcholkow
 		}
 
-		displayPaths(i);// wyswietl zawartosc tablicy
-		nTree = 0; // zeruj drzewo
+//		displayPaths(i);// wyswietl zawartosc tablicy
+
+		this.weightConnection = shortPath[j - 1].distance;
+		System.out.println("Najkrotsza sciezka pomiedzy " + i + " a " + j
+				+ " wynosi: " + shortPath[j - 1].distance);
+
+		level = 0; // zeruj drzewo
 		for (int k = 0; k < numberOfVertexes; k++) {
 			vertexList.get(k).wasVisited = false;
 		}
 
-		// while (!theStack.isEmpty()) {// do momentu oproznienia stosu
-		//
-		// // pobieram adres nieodwiedzonego wierzcholka przyleglego do
-		// // wierzcholka
-		// // i
-		// int neighbour = getAdjacentyUnvisitedVertex(theStack.peek());//TODO
-		//
-		// if (neighbour == -1) {
-		// // gdy wierzcholek o adresie A nie ma sasiadow
-		// theStack.pop();
-		// } else {
-		// // oznaczam sasiada jako odwiedzony
-		// vertexList.get(neighbour).wasVisited = true;
-		//
-		//
-		// // if (neighbour == B) {
-		// // // jesli adres sasiada jest rowny adresowni docelowego
-		// // // elementu -j, to polaczenie miedzy elementami i i j
-		// // // istnieje
-		// //
-		// // System.out.println("Istnieje polaczaenie pomiedzy: "
-		// // + vertexList.get(A));
-		// // for (Vertex x : neighboursOfTheVertex) {
-		// // System.out.println(" i " + x);
-		// // }
-		// System.out.print("wierzcholki po drodze "+
-		// vertexList.get(neighbour));
-		// // zapisz sasiada na stos
-		// theStack.push(neighbour);
-		// }
-		// //}
-		// }
-		//
-		// // TODO
 	}
 
 	private void displayPaths(int i) {
-		System.out.println("Najkrótsza odleglosc od wierzcholka "+i + " do poszczegolnych punktow wynosi: ");
+		System.out.println("Najkrótsza odleglosc od wierzcholka " + i
+				+ " do poszczegolnych punktow wynosi: ");
 		for (int j = 0; j < numberOfVertexes; j++) {
-			if(j+1!=i){
-			System.out.print(" do "+(j+1)+" = ");
+			if (j + 1 != i) {
+				System.out.print(" do " + (j + 1) + " = ");
 				System.out.print(shortPath[j].distance);
-			
-			//int parent = vertexList.get(shortPath[j].parentVertex).getValue();
-			System.out.println("(przez wierzcholek " + shortPath[j].parentVertex + ")");
+
+				// int parent =
+				// vertexList.get(shortPath[j].parentVertex).getValue();
+				System.out.println("(przez wierzcholek "
+						+ shortPath[j].parentVertex + ")");
 			}
 		}
 
@@ -197,7 +169,6 @@ public class Graph2 {
 	private int findVertexInTheList(int i) {
 		for (Vertex x : vertexList) {
 			if (x.getValue() == i) {
-				System.out.println("Index of v " + vertexList.indexOf(x));
 				return vertexList.indexOf(x);
 
 			}
@@ -238,14 +209,13 @@ public class Graph2 {
 
 	}
 
-	private void adjus_sPath(int currentVert, int startToCurrent) {
+	private void adjus_sPath(int addressCurrentVert, int startToCurrent) {
 		// popraw wartosci w tablicy najkrotszych sciezek shortPath
 
-		int column = 1;// pomin wierzcholek poczatkowy
+		int column = 0;// pomin wierzcholek poczatkowy
 		while (column < numberOfVertexes) {// kolejne kolumny
 			// jezeli wierzcholek odpowiadajacy tej kolumnie jest juz w drzewie,
-			// pomin go //TODO mozliwe ze sie zapetli- skorzystaj z wiadomosci o
-			// sasiadach
+			// pomin go
 
 			if (vertexList.get(column).wasVisited) {
 				column++;
@@ -253,22 +223,72 @@ public class Graph2 {
 			}
 			// oblicz odleglosc dla jednego wpisu shortPath
 			// pobierz krawedz od bie¿cego wierzcholka do wierzcholka column
-			int currentToFringe = adjacencyMatrix[currentVert][column];
+			int currentToFringe = adjacencyMatrix[addressCurrentVert][column];
 			if (currentToFringe != -1) {
-				// dodaj odleglsc od poczatku
-				int startToFringe = startToCurrent + currentToFringe;
+				// dodaj odleglsc od poczatku do konca nowej krawedzi
+				int wayFromStartToFringe = startToCurrent + currentToFringe;
 				// pobierz odleglosc biezacego wpisy shortPath
 				int sPathDist = shortPath[column].distance;
 
 				// porownaj odleglosc od poczatku z wpisem z shortPath
-				if (startToFringe < sPathDist || sPathDist==-1) {// je¿eli krotsza uaktualnij
-												// shortPath
-					shortPath[column].parentVertex = vertexList.get(currentVert).getValue();
-					shortPath[column].distance = startToFringe;
+				if (wayFromStartToFringe < sPathDist || sPathDist == -1) {// je¿eli
+																			// krotsza
+																			// uaktualnij
+					// shortPath
+					shortPath[column].parentVertex = vertexList.get(
+							addressCurrentVert).getValue();
+					shortPath[column].distance = wayFromStartToFringe;
 				}
 			}
 			column++;
 		}
 	}
 
+	public char[] readWayAndNrOfPakckets(String textEdge) {
+		String[] getData = textEdge.split(":");
+		numberOfPackets = Integer.parseInt(getData[1]);
+		char[] points = new char[getData.length];// dlugosc 2
+		// zczytuje odpowiednie wierzcholki tworzace trase
+		getData[0].getChars(1, 2, points, 0);
+		// trasa: start jest w point[0], a meta w point[1]
+		getData[0].getChars(5, 6, points, 1);
+		System.out.println("Start: " + points[0] + " and finish: " + points[1]
+				+ " nr of packets: " + numberOfPackets);
+		return points;
+	}
+
+	public int nrOfRounds() {
+		return weightConnection * constant / numberOfPackets;
+	}
+
+	public ArrayList<Vertex> displayVeritlesOnTheWay(String lineLoad) {
+	char[] way = readWayAndNrOfPakckets(lineLoad);
+	int i=Character.getNumericValue(way[0]);
+	int j= Character.getNumericValue(way[1]);
+	
+	System.out.print("wierzcholki po drodze: ");
+	vertixesOnTheWay = new ArrayList<Vertex>();
+	vertixesOnTheWay.add(vertexList.get(j-1));
+	while(shortPath[j-1].parentVertex !=i){
+		vertixesOnTheWay.add(vertexList.get(shortPath[j-1].parentVertex -1));
+		j = shortPath[j-1].parentVertex;
+	}
+	vertixesOnTheWay.add(vertexList.get(i-1));
+	for(int k=vertixesOnTheWay.size(); k>0; k--){
+		System.out.print(vertixesOnTheWay.get(k-1).getValue()+ " ");
+	}
+	System.out.println();
+	
+	return vertixesOnTheWay;
+		
+	}
+
+	public void increaseWeightAtOne() {
+		for(int k=vertixesOnTheWay.size(); k>1; k--){
+			int i = vertixesOnTheWay.get(k-1).getValue();//wartosc wirzcholka
+			int j = vertixesOnTheWay.get(k-2).getValue();
+			this.adjacencyMatrix[i - 1][j - 1] += 1;
+			this.adjacencyMatrix[j - 1][i - 1] += 1;
+		}
+	}
 }
